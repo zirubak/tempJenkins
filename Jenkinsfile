@@ -120,6 +120,19 @@ cat contributors.txt
 mv notes.txt ..
 mv contributors.txt ..'''
         }
+        
+        BUILD_VER = sh(script: "find ${WORKSPACE} -name system_version.txt|xargs cat",
+                       returnStdout: true).trim()
+        BUILD_VER += "-b"
+        BUILD_VER += sh(script: "find ${WORKSPACE} -name system_build.txt|xargs cat",
+                       returnStdout: true).trim()
+        echo "## BUILD_VER: ${BUILD_VER}"
+        CONTRIBUTORS = sh(script: "find ${WORKSPACE} -name contributors.txt|xargs cat",
+                       returnStdout: true)
+        echo "## CONTRIBUTORS: ${CONTRIBUTORS}"
+        COMMITS = sh(script: "find ${WORKSPACE} -name note.txt|xargs cat",
+                       returnStdout: true)
+        echo "## COMMITS: ${COMMITS}"
       }
     }
   }

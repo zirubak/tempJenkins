@@ -315,6 +315,16 @@ cbe ./update.sh ${imx6} ${omap} ${BUILD_NUMBER} stable-6.0 ../manifest-update fa
           }
         }
       }
+
+      post{
+        always{
+        
+        }
+        failure{
+        
+        }
+      }
+      
       environment {
         all_resut = 'FAILURE'
         nameStep = ''

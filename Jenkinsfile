@@ -172,11 +172,11 @@ mv contributors.txt ..'''
 
             dir(path: 'linux-manifest') {
               withCredentials(bindings: [[
-                                        $class: 'UsernamePasswordMultiBinding',
-                                        credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
-                                        usernameVariable: 'jenkins_build',
-                                        passwordVariable: 'ppr0jm11eRdjV900gZCk'
-                                      ]]) {
+                                                        $class: 'UsernamePasswordMultiBinding',
+                                                        credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
+                                                        usernameVariable: 'jenkins_build',
+                                                        passwordVariable: 'ppr0jm11eRdjV900gZCk'
+                                                      ]]) {
                   sh '''set -x
 if [ -z "$imx6" ]
 then
@@ -225,26 +225,32 @@ fi'''
                 git(url: 'http://github.trellisware.com/software-team/linux-build-scripts', branch: 'stable-6.0-tsm-e', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
               }
 
-              dir(path: 'openembedded-dev-trellisware'){
+              dir(path: 'openembedded-dev-trellisware') {
                 withCredentials(bindings: [[
-                                          $class: 'UsernamePasswordMultiBinding',
-                                          credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
-                                          usernameVariable: 'jenkins_build',
-                                          passwordVariable: 'ppr0jm11eRdjV900gZCk'
-                        ]]) {
+                                                            $class: 'UsernamePasswordMultiBinding',
+                                                            credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
+                                                            usernameVariable: 'jenkins_build',
+                                                            passwordVariable: 'ppr0jm11eRdjV900gZCk'
+                                          ]]) {
+                    sh 'git config --global user.email "jenkins_build@trellisware.com"'
+                    sh 'git config --global user.name "Jenkins Build"'
+                    sh '''// checks for git version tag existence, exits if tag dne
+git ls-remote --exit-code --tags origin $omap'''
+                  }
+
                 }
+
               }
             }
           }
         }
       }
+      environment {
+        all_resut = 'FAILURE'
+        nameStep = ''
+        nameStepFail = ''
+        BUILD_VER = ''
+        CONTRIBUTORS = ''
+        nameStepCOMMITS = ''
+      }
     }
-    environment {
-      all_resut = 'FAILURE'
-      nameStep = ''
-      nameStepFail = ''
-      BUILD_VER = ''
-      CONTRIBUTORS = ''
-      nameStepCOMMITS = ''
-    }
-  }

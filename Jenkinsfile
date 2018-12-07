@@ -172,11 +172,11 @@ mv contributors.txt ..'''
 
             dir(path: 'linux-manifest') {
               withCredentials(bindings: [[
-                                                                        $class: 'UsernamePasswordMultiBinding',
-                                                                        credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
-                                                                        usernameVariable: 'jenkins_build',
-                                                                        passwordVariable: 'ppr0jm11eRdjV900gZCk'
-                                                                      ]]) {
+                                                                                        $class: 'UsernamePasswordMultiBinding',
+                                                                                        credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
+                                                                                        usernameVariable: 'jenkins_build',
+                                                                                        passwordVariable: 'ppr0jm11eRdjV900gZCk'
+                                                                                      ]]) {
                   sh '''set -x
 if [ -z "$imx6" ]
 then
@@ -227,11 +227,11 @@ fi'''
 
               dir(path: 'openembedded-dev-trellisware') {
                 withCredentials(bindings: [[
-                                                                              $class: 'UsernamePasswordMultiBinding',
-                                                                              credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
-                                                                              usernameVariable: 'jenkins_build',
-                                                                              passwordVariable: 'ppr0jm11eRdjV900gZCk'
-                                                            ]]) {
+                                                                                                $class: 'UsernamePasswordMultiBinding',
+                                                                                                credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
+                                                                                                usernameVariable: 'jenkins_build',
+                                                                                                passwordVariable: 'ppr0jm11eRdjV900gZCk'
+                                                                              ]]) {
                     sh 'git config --global user.email "jenkins_build@trellisware.com"'
                     sh 'git config --global user.name "Jenkins Build"'
                     sh '''// checks for git version tag existence, exits if tag dne
@@ -295,7 +295,7 @@ cbe ./update.sh ${imx6} ${omap} ${BUILD_NUMBER} stable-6.0 ../manifest-update fa
             }
 
             dir(path: 'manifest-update') {
-              archiveArtifacts '**'
+              archiveArtifacts(artifacts: '**', allowEmptyArchive: true)
             }
 
           }

@@ -295,7 +295,7 @@ cbe ./update.sh ${imx6} ${omap} ${BUILD_NUMBER} stable-6.0 ../manifest-update fa
             }
 
             dir(path: 'manifest-update') {
-              archiveArtifacts(artifacts: '**', allowEmptyArchive: true)
+              archiveArtifacts(artifacts: '**', allowEmptyArchive: false)
             }
 
           }

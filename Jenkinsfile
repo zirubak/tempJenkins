@@ -168,7 +168,20 @@ mv contributors.txt ..'''
           git(url: 'http://github.trellisware.com/software-team/automation', branch: 'master', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
         }
 
-        dir(path: 'linux-manifest')
+        dir(path: 'linux-manifest') {
+          
+          withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding',
+            credentialsId: 'jenkins',
+            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+          ]]) {
+            sh 'AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} AWS_DEFAULT_REGION=us-east-1 ${AWS_BIN} ecs update-service --cluster default --service test-deploy-svc --task-definition test-deploy:2 --desired-count 0'
+            sh 'sleep 1m' // SOOOO HACKY!!!
+            sh 'AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} AWS_DEFAULT_REGION=us-east-1 ${AWS_BIN} ecs update-service --cluster default --service test-deploy-svc --task-definition test-deploy:2 --desired-count 1'
+          }
+          
+        }
       }
     }
   }

@@ -232,6 +232,7 @@ fi'''
                                           usernameVariable: 'jenkins_build',
                                           passwordVariable: 'ppr0jm11eRdjV900gZCk'
                         ]]) {
+                }
               }
             }
           }

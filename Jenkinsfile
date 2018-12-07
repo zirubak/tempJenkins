@@ -141,50 +141,93 @@ mv contributors.txt ..'''
       }
     }
     stage('build tsm-x') {
-      agent {
-        node {
-          label 'nightly-yocto'
-        }
+      parallel {
+        stage('build tsm-x') {
+          agent {
+            node {
+              label 'nightly-yocto'
+            }
 
-      }
-      environment {
-        nameStep = 'build tsm-x'
-      }
-      steps {
-        deleteDir()
-        dir(path: 'linux-build-scripts') {
-          git(url: 'http://github.trellisware.com/software-team/linux-build-scripts', branch: 'stable-6.0-tsm-x', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
-        }
+          }
+          environment {
+            nameStep = 'build tsm-x'
+          }
+          steps {
+            deleteDir()
+            dir(path: 'linux-build-scripts') {
+              git(url: 'http://github.trellisware.com/software-team/linux-build-scripts', branch: 'stable-6.0-tsm-x', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
+            }
 
-        dir(path: 'manifest-update') {
-          git(url: 'http://github.trellisware.com/software-team/manifest-update', branch: 'stable-6.0', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
-        }
+            dir(path: 'manifest-update') {
+              git(url: 'http://github.trellisware.com/software-team/manifest-update', branch: 'stable-6.0', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
+            }
 
-        dir(path: 'linux-manifest') {
-          git(url: 'http://github.trellisware.com/software-team/linux-manifest', branch: 'stable-6.0-tsm-x', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
-        }
+            dir(path: 'linux-manifest') {
+              git(url: 'http://github.trellisware.com/software-team/linux-manifest', branch: 'stable-6.0-tsm-x', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
+            }
 
-        dir(path: 'automation') {
-          git(url: 'http://github.trellisware.com/software-team/automation', branch: 'master', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
-        }
+            dir(path: 'automation') {
+              git(url: 'http://github.trellisware.com/software-team/automation', branch: 'master', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
+            }
 
-        dir(path: 'linux-manifest') {
-          withCredentials(bindings: [[
-                        $class: 'UsernamePasswordMultiBinding',
-                        credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
-                        usernameVariable: 'jenkins_build',
-                        passwordVariable: 'ppr0jm11eRdjV900gZCk'
-                      ]]) {
-              sh '''set -x
+            dir(path: 'linux-manifest') {
+              withCredentials(bindings: [[
+                                        $class: 'UsernamePasswordMultiBinding',
+                                        credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
+                                        usernameVariable: 'jenkins_build',
+                                        passwordVariable: 'ppr0jm11eRdjV900gZCk'
+                                      ]]) {
+                  sh '''set -x
 if [ -z "$imx6" ]
 then
     imx6=`git describe --abbrev=0`
 fi'''
-              sh 'git ls-remote --exit-code --tags origin $imx6'
+                  sh 'git ls-remote --exit-code --tags origin $imx6'
+                }
+
+              }
+
+              dir(path: 'automation') {
+                sh '''// checks for svn linux distro version tag existence, builds if tag dne
+set -x
+echo $PATH
+rm -rf ../builds
+if ! svn ls https://svn.trellisware.com/twt-release/restricted/shadow/device/components/gpp/linux/${imx6} &> /dev/null; then
+    echo "The svn tag ${imx6} does not exist and now we will attempt to build it"
+    cbe bash -s <<EOF
+    set -x
+    set -e
+    if ${svn}; then
+        echo "svn is true"
+        ./linux-release-tsm-x.sh ${imx6} /home/*/ci/workspace/packager stable-6.0
+    else
+        echo "svn is false"
+        ./linux-release-tsm-x.sh --dry-run ${imx6} /home/*/ci/workspace/packager stable-6.0
+    fi
+EOF
+fi'''
+              }
+
             }
-
           }
+          stage('build tsm-e') {
+            agent {
+              node {
+                label 'nightly-oe-classic'
+              }
 
+            }
+            environment {
+              nameStep = 'build tsm-e'
+            }
+            steps {
+              dir(path: 'linux-build-scripts') {
+                git(url: 'http://github.trellisware.com/software-team/linux-build-scripts', branch: 'stable-6.0-tsm-e', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
+              }
+
+              dir(path: 'openembedded-dev-trellisware')
+            }
+          }
         }
       }
     }

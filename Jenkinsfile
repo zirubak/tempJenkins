@@ -170,10 +170,10 @@ mv contributors.txt ..'''
 
         dir(path: 'linux-manifest') {
           withCredentials(bindings: [[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'jenkins',
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                        $class: 'UsernamePasswordMultiBinding',
+                        credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
+                        usernameVariable: 'jenkins_build',
+                        passwordVariable: 'ppr0jm11eRdjV900gZCk'
                       ]]) {
               sh '''set -x
 if [ -z "$imx6" ]

@@ -122,9 +122,6 @@ mv contributors.txt ..'''
         }
 
         script {
-          // IT HAS TO USE AFTER THE TXT FILES ARE CREATED !!!!!! //
-          //////////  Extract data from *.txt //////////////////////
-          // Extract build version string from system_version.txt
           BUILD_VER = sh(script: "find ${WORKSPACE} -name system_version.txt|xargs cat",
           returnStdout: true).trim()
           BUILD_VER += "-b"
@@ -139,9 +136,39 @@ mv contributors.txt ..'''
           COMMITS = sh(script: "find ${WORKSPACE} -name note.txt|xargs cat",
           returnStdout: true)
           echo "## COMMITS: ${COMMITS}"
-          ////////////////////////////////////////////////////////////
         }
 
+      }
+    }
+    stage('build tsm-x') {
+      agent {
+        node {
+          label 'nightly-yocto'
+        }
+
+      }
+      environment {
+        nameStep = 'build tsm-x'
+      }
+      steps {
+        deleteDir()
+        dir(path: 'linux-build-scripts') {
+          git(url: 'http://github.trellisware.com/software-team/linux-build-scripts', branch: 'stable-6.0-tsm-x', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
+        }
+
+        dir(path: 'manifest-update') {
+          git(url: 'http://github.trellisware.com/software-team/manifest-update', branch: 'stable-6.0', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
+        }
+
+        dir(path: 'linux-manifest') {
+          git(url: 'http://github.trellisware.com/software-team/linux-manifest', branch: 'stable-6.0-tsm-x', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
+        }
+
+        dir(path: 'automation') {
+          git(url: 'http://github.trellisware.com/software-team/automation', branch: 'master', credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744')
+        }
+
+        dir(path: 'linux-manifest')
       }
     }
   }
@@ -151,6 +178,6 @@ mv contributors.txt ..'''
     nameStepFail = ''
     BUILD_VER = ''
     CONTRIBUTORS = ''
-    COMMITS = ''
+    nameStepCOMMITS = ''
   }
 }

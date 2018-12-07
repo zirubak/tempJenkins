@@ -169,28 +169,31 @@ mv contributors.txt ..'''
         }
 
         dir(path: 'linux-manifest') {
-          
-          withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'jenkins',
-            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-          ]]) {
-            sh 'AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} AWS_DEFAULT_REGION=us-east-1 ${AWS_BIN} ecs update-service --cluster default --service test-deploy-svc --task-definition test-deploy:2 --desired-count 0'
-            sh 'sleep 1m' // SOOOO HACKY!!!
-            sh 'AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} AWS_DEFAULT_REGION=us-east-1 ${AWS_BIN} ecs update-service --cluster default --service test-deploy-svc --task-definition test-deploy:2 --desired-count 1'
+          withCredentials(bindings: [[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'jenkins',
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                      ]]) {
+              sh '''set -x
+if [ -z "$imx6" ]
+then
+    imx6=`git describe --abbrev=0`
+fi'''
+              sh 'git ls-remote --exit-code --tags origin $imx6'
+            }
+
           }
-          
+
         }
       }
     }
+    environment {
+      all_resut = 'FAILURE'
+      nameStep = ''
+      nameStepFail = ''
+      BUILD_VER = ''
+      CONTRIBUTORS = ''
+      nameStepCOMMITS = ''
+    }
   }
-  environment {
-    all_resut = 'FAILURE'
-    nameStep = ''
-    nameStepFail = ''
-    BUILD_VER = ''
-    CONTRIBUTORS = ''
-    nameStepCOMMITS = ''
-  }
-}

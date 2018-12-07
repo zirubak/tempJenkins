@@ -172,11 +172,11 @@ mv contributors.txt ..'''
 
             dir(path: 'linux-manifest') {
               withCredentials(bindings: [[
-                                                        $class: 'UsernamePasswordMultiBinding',
-                                                        credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
-                                                        usernameVariable: 'jenkins_build',
-                                                        passwordVariable: 'ppr0jm11eRdjV900gZCk'
-                                                      ]]) {
+                                                                        $class: 'UsernamePasswordMultiBinding',
+                                                                        credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
+                                                                        usernameVariable: 'jenkins_build',
+                                                                        passwordVariable: 'ppr0jm11eRdjV900gZCk'
+                                                                      ]]) {
                   sh '''set -x
 if [ -z "$imx6" ]
 then
@@ -227,11 +227,11 @@ fi'''
 
               dir(path: 'openembedded-dev-trellisware') {
                 withCredentials(bindings: [[
-                                                            $class: 'UsernamePasswordMultiBinding',
-                                                            credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
-                                                            usernameVariable: 'jenkins_build',
-                                                            passwordVariable: 'ppr0jm11eRdjV900gZCk'
-                                          ]]) {
+                                                                              $class: 'UsernamePasswordMultiBinding',
+                                                                              credentialsId: '7375b363-bbe2-4ce3-a6fb-14926ba42744',
+                                                                              usernameVariable: 'jenkins_build',
+                                                                              passwordVariable: 'ppr0jm11eRdjV900gZCk'
+                                                            ]]) {
                     sh 'git config --global user.email "jenkins_build@trellisware.com"'
                     sh 'git config --global user.name "Jenkins Build"'
                     sh '''// checks for git version tag existence, exits if tag dne
@@ -240,8 +240,64 @@ git ls-remote --exit-code --tags origin $omap'''
 
                 }
 
+                dir(path: 'automation') {
+                  sh '''// checks for svn linux distro version tag existence, builds if tag dne
+
+set -x
+rm -rf ../builds
+echo $omap
+if ! svn ls https://svn.trellisware.com/twt-release/restricted/ghostii/device/components/slice/gpp/operational/${omap} &> /dev/null; then
+    echo "The svn tag ${omap} does not exist and now we will attempt to build it"
+    cbe bash -s <<EOF
+    set -x
+    set -e
+    if ${svn}; then
+        echo "svn is true"
+        ./linux-release-tsm-e.sh ${omap} /home/*/ci/workspace/packager stable-6.0
+    else
+        echo "svn is false"
+        ./linux-release-tsm-e.sh --dry-run ${omap} /home/*/ci/workspace/packager stable-6.0
+    fi
+EOF
+fi'''
+                }
+
               }
             }
+          }
+        }
+        stage('package') {
+          agent {
+            node {
+              label 'nightly-oe-classic'
+            }
+
+          }
+          environment {
+            nameStep = 'package'
+          }
+          steps {
+            dir(path: 'automation') {
+              sh '''set -x
+if [ -z "$imx6" ]
+then
+    cd ../linux-manifest
+    imx6=`git describe --abbrev=0`
+    cd ../automation
+fi
+if [ -z "$omap" ]
+then
+    cd ../openembedded-dev-trellisware
+    omap=`git describe --abbrev=0`
+    cd ../automation
+fi
+cbe ./update.sh ${imx6} ${omap} ${BUILD_NUMBER} stable-6.0 ../manifest-update false ${release} ${push} true'''
+            }
+
+            dir(path: 'manifest-update') {
+              archiveArtifacts '**'
+            }
+
           }
         }
       }
